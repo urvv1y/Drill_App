@@ -11,7 +11,7 @@ public class PenaltyScoringStrategy implements ScoringStrategy {
     }
 
     @Override
-    public int evaluate(Set<Integer> userAnswers, Set<Integer> correctAnswers) {
+    public double evaluate(Set<Integer> userAnswers, Set<Integer> correctAnswers) {
         int score = 0;
 
         for (Integer answer : userAnswers) {

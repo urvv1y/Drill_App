@@ -36,7 +36,7 @@ public class CustomScoringStrategy implements ScoringStrategy {
 
 
     @Override
-    public int evaluate(Set<Integer> userAnswers, Set<Integer> correctAnswers) {
+    public double evaluate(Set<Integer> userAnswers, Set<Integer> correctAnswers) {
 
         int size = userAnswers.size();
         int correctCount = 0;
