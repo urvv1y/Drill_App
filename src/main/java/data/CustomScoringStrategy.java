@@ -2,6 +2,17 @@ package data;
 
 import java.util.Set;
 
+/**
+ * Class for customizing the definitions of the questions.
+ * Defines how many points will be added to the final score from selecting certain amount of answers.
+ * e.g.:
+ * pointsTwoCorrect = 4; You will get 4 points when selecting two correct answers;
+ * pointsOneCorrectInTwo = 0; You will receive 0 points when selecting only one option from 2 needed;
+ * pointsZeroCorrectInTwo = -2; You will receive -2 points when selecting 0 correct answers;
+ * pointsOneCorrect = 1; You will receive 1 points from selecting one option;
+ * pointsOneWrong = -1; You will receive -1 points from selecting wrong;
+ * @author urvy.
+ */
 public class CustomScoringStrategy implements ScoringStrategy {
     private int pointsTwoCorrect;
     private int pointsOneCorrectInTwo;
@@ -22,8 +33,6 @@ public class CustomScoringStrategy implements ScoringStrategy {
         this.pointsOneWrong =pointsOneWrong;
 
     }
-
-
 
 
     @Override
