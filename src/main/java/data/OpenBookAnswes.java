@@ -21,5 +21,5 @@ public class OpenBookAnswes extends Question {
         }
         return false;
     }
-    
+
 }
