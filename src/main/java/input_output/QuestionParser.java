@@ -1,47 +1,101 @@
 package input_output;
 
-import data.Question;
+import data.*;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class QuestionParser {
 
-    public static List<Question> parseFile(String filePath) throws FileNotFoundException {
+    public static List<Question> loadQuestions(String filePath) {
         List<Question> questions = new ArrayList<>();
 
+
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
-            String line = reader.readLine();
+            String line;
 
-            while (line != null) {
+
+            String questionText = "";
+            List<String> options = new ArrayList<>();
+            Set<Integer> correctAnswers = new HashSet<>();
+            Map<Integer, HowStupidAnswerPenalize> penalties = new HashMap<>();
+            boolean isFormatWithPenalty = false;
+
+
+            while ((line = reader.readLine()) != null) {
                 line = line.trim();
-
-                if (line.isEmpty() || line.equals("---")) {
-                    continue;
-                }
+                if (line.isEmpty()) continue;
 
                 if (line.startsWith("Q: ")) {
-                    String questionText = line.substring(3).trim();
+                    questionText = line.substring(3).trim();
 
-                    reader.mark(1000);
-                    String nextLine = reader.readLine();
+                    options.clear();
+                    correctAnswers.clear();
+                    penalties.clear();
+                    isFormatWithPenalty = false;
 
-                    if (nextLine != null) {
-                        if (nextLine.startsWith("OK:") || nextLine.startsWith("NOK:")) {
-                            reader.reset();
-                        } else if (nextLine.startsWith("A:")) {
-                            reader.reset();
-                        }
+                } else if (line.startsWith("OK: ")) {
+
+                    correctAnswers.add(options.size());
+                    options.add(line.substring(4).trim());
+
+                } else if (line.startsWith("NOK: ")) {
+
+                    options.add(line.substring(5).trim());
+
+                } else if (line.matches("^[A-Z]: .*")) {
+
+                    isFormatWithPenalty = true;
+                    options.add(line.substring(3).trim());
+
+                } else if (line.startsWith("ANS: ")) {
+                    String ansLetters = line.substring(5).trim();
+                    for (char c : ansLetters.toCharArray()) {
+                        correctAnswers.add(c - 'A');
                     }
+
+                } else if (line.startsWith("MINUS1: ")) {
+                    String ansLetters = line.substring(8).trim();
+                    for (char c : ansLetters.toCharArray()) {
+                        penalties.put(c - 'A', HowStupidAnswerPenalize.STUPID);
+                    }
+
+                } else if (line.startsWith("MINUS2: ")) {
+                    String ansLetters = line.substring(8).trim();
+                    for (char c : ansLetters.toCharArray()) {
+                        penalties.put(c - 'A', HowStupidAnswerPenalize.VERY_STUPID);
+                    }
+
+                } else if (line.equals("---")) {
+
+                    ScoringStrategy strategy;
+
+                    if (isFormatWithPenalty) {
+
+                        strategy = new PenaltyScoringStrategy(new HashMap<>(penalties));
+                    } else {
+
+                        strategy = new CustomScoringStrategy(2, 1, 0, 1, 0);
+                    }
+
+                    Question q = new MultipleChoiceQuestionWithOrWithoutPenalization(
+                            "Základy OS";
+                            Difficulty.EASY,
+                            questionText,
+                            new ArrayList<>(options), 
+                            new HashSet<>(correctAnswers),
+                            strategy
+                    );
+                    questions.add(q);
                 }
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+
+            System.err.println(e.getMessage());
         }
+
         return questions;
     }
 }
