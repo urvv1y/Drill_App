@@ -9,13 +9,12 @@ import java.util.*;
 
 public class QuestionParser {
 
-    public static List<Question> loadQuestions(String filePath) {
+    public static List<Question> loadQuestions(String filePath, String subject, Difficulty difficulty) {
         List<Question> questions = new ArrayList<>();
 
 
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             String line;
-
 
             String questionText = "";
             List<String> options = new ArrayList<>();
@@ -30,23 +29,19 @@ public class QuestionParser {
 
                 if (line.startsWith("Q: ")) {
                     questionText = line.substring(3).trim();
-
                     options.clear();
                     correctAnswers.clear();
                     penalties.clear();
                     isFormatWithPenalty = false;
 
                 } else if (line.startsWith("OK: ")) {
-
                     correctAnswers.add(options.size());
                     options.add(line.substring(4).trim());
 
                 } else if (line.startsWith("NOK: ")) {
-
                     options.add(line.substring(5).trim());
 
                 } else if (line.matches("^[A-Z]: .*")) {
-
                     isFormatWithPenalty = true;
                     options.add(line.substring(3).trim());
 
@@ -70,32 +65,46 @@ public class QuestionParser {
 
                 } else if (line.equals("---")) {
 
-                    ScoringStrategy strategy;
+                    saveQuestion(questions, subject, questionText, options, correctAnswers, penalties, isFormatWithPenalty, difficulty);
 
-                    if (isFormatWithPenalty) {
-
-                        strategy = new PenaltyScoringStrategy(new HashMap<>(penalties));
-                    } else {
-
-                        strategy = new CustomScoringStrategy(2, 1, 0, 1, 0);
-                    }
-
-                    Question q = new MultipleChoiceQuestionWithOrWithoutPenalization(
-                            "Základy OS";
-                            Difficulty.EASY,
-                            questionText,
-                            new ArrayList<>(options), 
-                            new HashSet<>(correctAnswers),
-                            strategy
-                    );
-                    questions.add(q);
+                    questionText = "";
                 }
             }
-        } catch (IOException e) {
 
+
+            if (!questionText.isEmpty()) {
+                saveQuestion(questions, subject, questionText, options, correctAnswers, penalties, isFormatWithPenalty, difficulty);
+            }
+
+        } catch (IOException e) {
             System.err.println(e.getMessage());
         }
 
         return questions;
+    }
+
+
+    private static void saveQuestion(List<Question> questions, String subject, String questionText,
+                                     List<String> options, Set<Integer> correctAnswers,
+                                     Map<Integer, HowStupidAnswerPenalize> penalties, boolean isFormatWithPenalty, Difficulty difficulty) {
+
+        ScoringStrategy strategy;
+
+        if (isFormatWithPenalty) {
+            strategy = new PenaltyScoringStrategy(new HashMap<>(penalties));
+        } else {
+            strategy = new CustomScoringStrategy(2, 1, 0, 1, 0);
+        }
+
+        Question q = new MultipleChoiceQuestionWithOrWithoutPenalization(
+                subject,
+                difficulty,
+                questionText,
+                new ArrayList<>(options),
+                new HashSet<>(correctAnswers),
+                strategy
+        );
+
+        questions.add(q);
     }
 }
