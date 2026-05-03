@@ -32,6 +32,10 @@ public class MultipleChoiceQuestionWithOrWithoutPenalization extends Question {
         return scoringStrategy.evaluate(userAnswers, correctOptionIndexes);
     }
 
+    public List<String> getOptions() {
+        return options;
+    }
+
     @Override
     public boolean isCorrect(Object answer) {
         if (answer instanceof Set<?> rawSet) {
