@@ -6,6 +6,8 @@ import input_output.OpenBookQuestionParser;
 import input_output.QuestionParser;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
@@ -21,14 +23,22 @@ public class MainGUI extends JFrame {
     private DefaultListModel<String> listModel;
     private JList<String> subjectList;
 
+    // Barvy ve stylu IS MUNI
+    private final Color IS_BLUE = new Color(0, 92, 165);
+    private final Color IS_LIGHT_BG = new Color(245, 246, 248);
+
     public MainGUI() {
         loadConfig();
 
-        setTitle("IS MUNI- Tester");
-        setSize(600, 450);
+        // Nastavení moderního vzhledu oken
+        try { UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName()); } catch (Exception ignored) {}
+
+        setTitle("IS MUNI - Odpovědníky");
+        setSize(700, 500);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
-        setLayout(new BorderLayout(10, 10));
+        setLayout(new BorderLayout(0, 0));
+        getContentPane().setBackground(Color.WHITE);
 
         initUI();
 
@@ -41,66 +51,97 @@ public class MainGUI extends JFrame {
     }
 
     private void initUI() {
+        // Hlavička
+        JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        headerPanel.setBackground(IS_BLUE);
+        headerPanel.setBorder(new EmptyBorder(15, 20, 15, 20));
+        JLabel titleLabel = new JLabel("Výběr odpovědníku");
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        titleLabel.setForeground(Color.WHITE);
+        headerPanel.add(titleLabel);
+        add(headerPanel, BorderLayout.NORTH);
+
+        // Seznam předmětů
         listModel = new DefaultListModel<>();
         refreshList();
         subjectList = new JList<>(listModel);
-        subjectList.setFont(new Font("Arial", Font.PLAIN, 14));
-        JScrollPane scrollPane = new JScrollPane(subjectList);
-        scrollPane.setBorder(BorderFactory.createTitledBorder("Dostupné předměty"));
-        add(scrollPane, BorderLayout.CENTER);
+        subjectList.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        subjectList.setSelectionBackground(new Color(220, 235, 250));
+        subjectList.setSelectionForeground(Color.BLACK);
 
-        JPanel buttonPanel = new JPanel(new FlowLayout());
-        JButton btnAdd = new JButton("Přidat");
-        JButton btnEdit = new JButton("Upravit");
-        JButton btnDelete = new JButton("Smazat");
-        JButton btnStart = new JButton("Spustit kvíz");
+        JScrollPane scrollPane = new JScrollPane(subjectList);
+        scrollPane.setBorder(new LineBorder(new Color(200, 200, 200), 1, true));
+        scrollPane.setBackground(Color.WHITE);
+
+        JPanel centerPanel = new JPanel(new BorderLayout());
+        centerPanel.setBorder(new EmptyBorder(20, 20, 10, 20));
+        centerPanel.setBackground(IS_LIGHT_BG);
+        centerPanel.add(scrollPane, BorderLayout.CENTER);
+        add(centerPanel, BorderLayout.CENTER);
+
+        // Spodní panel s tlačítky
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 15));
+        buttonPanel.setBackground(IS_LIGHT_BG);
+        buttonPanel.setBorder(new EmptyBorder(0, 20, 20, 20));
+
+        JButton btnAdd = createStyledButton("Přidat konfiguraci", false);
+        JButton btnEdit = createStyledButton("Upravit", false);
+        JButton btnDelete = createStyledButton("Odstranit", false);
+        JButton btnStart = createStyledButton("Složit test", true);
 
         btnAdd.addActionListener(e -> showSubjectDialog(null));
-
         btnEdit.addActionListener(e -> {
             String selected = subjectList.getSelectedValue();
-            if (selected != null) {
-                String subjectName = selected.split(" - ")[0];
-                showSubjectDialog(subjectName);
-            } else {
-                JOptionPane.showMessageDialog(this, "Vyber předmět k úpravě!", "Upozornění", JOptionPane.WARNING_MESSAGE);
-            }
+            if (selected != null) showSubjectDialog(selected.split(" - ")[0]);
+            else JOptionPane.showMessageDialog(this, "Vyberte předmět k úpravě.", "Info", JOptionPane.INFORMATION_MESSAGE);
         });
 
         btnDelete.addActionListener(e -> {
             String selected = subjectList.getSelectedValue();
             if (selected != null) {
-                String subjectName = selected.split(" - ")[0];
-                config.getSubjects().remove(subjectName);
+                config.getSubjects().remove(selected.split(" - ")[0]);
                 refreshList();
             }
         });
 
         btnStart.addActionListener(e -> {
             String selected = subjectList.getSelectedValue();
-            if (selected != null) {
-                String subjectName = selected.split(" - ")[0];
-                startQuizMode(subjectName);
-            } else {
-                JOptionPane.showMessageDialog(this, "Nejprve vyber předmět!", "Upozornění", JOptionPane.WARNING_MESSAGE);
-            }
+            if (selected != null) startQuizMode(selected.split(" - ")[0]);
+            else JOptionPane.showMessageDialog(this, "Nejprve vyberte test ze seznamu.", "Info", JOptionPane.INFORMATION_MESSAGE);
         });
 
         buttonPanel.add(btnAdd);
         buttonPanel.add(btnEdit);
         buttonPanel.add(btnDelete);
+        buttonPanel.add(Box.createHorizontalStrut(20));
         buttonPanel.add(btnStart);
         add(buttonPanel, BorderLayout.SOUTH);
+    }
+
+    private JButton createStyledButton(String text, boolean isPrimary) {
+        JButton btn = new JButton(text);
+        btn.setFont(new Font("Segoe UI", isPrimary ? Font.BOLD : Font.PLAIN, 14));
+        btn.setFocusPainted(false);
+        if (isPrimary) {
+            btn.setBackground(IS_BLUE);
+            btn.setForeground(Color.WHITE);
+        } else {
+            btn.setBackground(Color.WHITE);
+            btn.setForeground(Color.DARK_GRAY);
+        }
+        return btn;
     }
 
     private void showSubjectDialog(String existingName) {
         boolean isEdit = existingName != null;
         SubjectSettings existingSettings = isEdit ? config.getSubjects().get(existingName) : null;
 
-        JDialog dialog = new JDialog(this, isEdit ? "Upravit předmět" : "Přidat nový předmět", true);
-        dialog.setSize(500, 650);
-        dialog.setLayout(new GridLayout(0, 2, 5, 5));
+        JDialog dialog = new JDialog(this, isEdit ? "Úprava nastavení testu" : "Nový test", true);
+        dialog.setSize(500, 680);
+        dialog.setLayout(new GridLayout(0, 2, 8, 8));
         dialog.setLocationRelativeTo(this);
+        dialog.getContentPane().setBackground(Color.WHITE);
+        ((JComponent)dialog.getContentPane()).setBorder(new EmptyBorder(15, 15, 15, 15));
 
         JTextField txtName = new JTextField(isEdit ? existingName : "");
         JTextField txtFile = new JTextField(isEdit ? existingSettings.getFilePath() : "");
@@ -141,44 +182,44 @@ public class MainGUI extends JFrame {
             txtPenVeryStupid.setText(String.valueOf(existingSettings.getPenaltyVeryStupid()));
         }
 
-        dialog.add(new JLabel(" Název předmětu:")); dialog.add(txtName);
-        dialog.add(new JLabel(" Soubor s otázkami:")); dialog.add(txtFile);
+        Font labelFont = new Font("Segoe UI", Font.PLAIN, 14);
+        Font headerFont = new Font("Segoe UI", Font.BOLD, 15);
+
+        dialog.add(createLabel("Název předmětu (např. PB152):", labelFont)); dialog.add(txtName);
+        dialog.add(createLabel("Zdrojový textový soubor:", labelFont)); dialog.add(txtFile);
         dialog.add(new JLabel("")); dialog.add(btnBrowse);
-        dialog.add(new JLabel(" Typ otázek:")); dialog.add(cbType);
-        dialog.add(new JLabel(" Obtížnost:")); dialog.add(cbDiff);
+        dialog.add(createLabel("Typ otázek:", labelFont)); dialog.add(cbType);
+        dialog.add(createLabel("Úroveň obtížnosti:", labelFont)); dialog.add(cbDiff);
 
-        dialog.add(new JLabel(" --- Běžné bodování ---")); dialog.add(new JLabel(""));
-        dialog.add(new JLabel(" 2 správně ze 2:")); dialog.add(txtP2);
-        dialog.add(new JLabel(" 1 správně ze 2:")); dialog.add(txtP1in2);
-        dialog.add(new JLabel(" 0 správně ze 2:")); dialog.add(txtP0in2);
-        dialog.add(new JLabel(" 1 správně z 1:")); dialog.add(txtP1);
-        dialog.add(new JLabel(" 1 chybně z 1:")); dialog.add(txtP1W);
+        dialog.add(createLabel("--- Bodování (Klasické) ---", headerFont)); dialog.add(new JLabel(""));
+        dialog.add(createLabel("2 správně ze 2 možných:", labelFont)); dialog.add(txtP2);
+        dialog.add(createLabel("1 správně ze 2 možných:", labelFont)); dialog.add(txtP1in2);
+        dialog.add(createLabel("0 správně ze 2 možných:", labelFont)); dialog.add(txtP0in2);
+        dialog.add(createLabel("1 správně z 1 možné:", labelFont)); dialog.add(txtP1);
+        dialog.add(createLabel("Špatná odpověď:", labelFont)); dialog.add(txtP1W);
 
-        dialog.add(new JLabel(" --- Penaltové bodování (Platí pro PV080) ---")); dialog.add(new JLabel(""));
-        dialog.add(new JLabel(" Správná odpověď (+):")); dialog.add(txtPenOk);
-        dialog.add(new JLabel(" Hloupá chyba (-):")); dialog.add(txtPenStupid);
-        dialog.add(new JLabel(" Velmi hloupá chyba (-):")); dialog.add(txtPenVeryStupid);
+        dialog.add(createLabel("--- Bodování (Penaltové) ---", headerFont)); dialog.add(new JLabel(""));
+        dialog.add(createLabel("Zisk za správnou odpověď:", labelFont)); dialog.add(txtPenOk);
+        dialog.add(createLabel("Ztráta za chybu (MINUS1):", labelFont)); dialog.add(txtPenStupid);
+        dialog.add(createLabel("Ztráta za hrubku (MINUS2):", labelFont)); dialog.add(txtPenVeryStupid);
 
-        JButton btnSave = new JButton("Uložit");
+        JButton btnSave = createStyledButton("Uložit do systému", true);
         btnSave.addActionListener(e -> {
             try {
                 String name = txtName.getText().trim();
-                if (name.isEmpty() || txtFile.getText().isEmpty()) throw new IllegalArgumentException("Název ani soubor nesmí být prázdné!");
+                if (name.isEmpty() || txtFile.getText().isEmpty()) throw new IllegalArgumentException("Vyplňte název a vyberte soubor.");
 
                 SubjectSettings settings = new SubjectSettings(
-                        txtFile.getText().trim(),
-                        cbType.getSelectedItem().toString(),
-                        (Difficulty) cbDiff.getSelectedItem()
-                );
+                        txtFile.getText().trim(), cbType.getSelectedItem().toString(), (Difficulty) cbDiff.getSelectedItem());
+
                 settings.setCustomScoring(
                         Integer.parseInt(txtP2.getText()), Integer.parseInt(txtP1in2.getText()),
                         Integer.parseInt(txtP0in2.getText()), Integer.parseInt(txtP1.getText()),
-                        Integer.parseInt(txtP1W.getText())
-                );
+                        Integer.parseInt(txtP1W.getText()));
+
                 settings.setPenaltyScoring(
                         Integer.parseInt(txtPenOk.getText()), Integer.parseInt(txtPenStupid.getText()),
-                        Integer.parseInt(txtPenVeryStupid.getText())
-                );
+                        Integer.parseInt(txtPenVeryStupid.getText()));
 
                 if (isEdit && !name.equals(existingName)) config.getSubjects().remove(existingName);
                 config.addSubject(name, settings);
@@ -186,13 +227,20 @@ public class MainGUI extends JFrame {
                 refreshList();
                 dialog.dispose();
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(dialog, "Chyba zadání: " + ex.getMessage(), "Chyba", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(dialog, "Chybný formát čísel nebo dat.", "Chyba", JOptionPane.ERROR_MESSAGE);
             }
         });
 
         dialog.add(new JLabel(""));
         dialog.add(btnSave);
         dialog.setVisible(true);
+    }
+
+    private JLabel createLabel(String text, Font font) {
+        JLabel label = new JLabel(text);
+        label.setFont(font);
+        label.setForeground(new Color(50, 50, 50));
+        return label;
     }
 
     private void startQuizMode(String subjectName) {
@@ -213,25 +261,18 @@ public class MainGUI extends JFrame {
         }
 
         if (allQuestions == null || allQuestions.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Nepodařilo se načíst žádné otázky ze souboru.\nZkontroluj, zda soubor existuje a má správný formát.", "Chyba", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Nelze načíst soubor s otázkami. Je poškozený nebo neexistuje.", "Chyba", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         Collections.shuffle(allQuestions);
-
-        String input = JOptionPane.showInputDialog(this, "Kolik otázek chceš? (Maximum: " + allQuestions.size() + ")", "Počet otázek", JOptionPane.QUESTION_MESSAGE);
+        String input = JOptionPane.showInputDialog(this, "Zadejte počet otázek do testu (Max: " + allQuestions.size() + ")", "Délka testu", JOptionPane.QUESTION_MESSAGE);
         int limit = allQuestions.size();
         if (input != null && !input.trim().isEmpty()) {
-            try {
-                limit = Math.min(Integer.parseInt(input.trim()), allQuestions.size());
-                if (limit < 1) limit = 1;
-            } catch (NumberFormatException ignored) {}
-        } else if (input == null) {
-            return; // Zrušeno uživatelem - opravena chyba komentáře
-        }
+            try { limit = Math.max(1, Math.min(Integer.parseInt(input.trim()), allQuestions.size())); } catch (NumberFormatException ignored) {}
+        } else if (input == null) { return; }
 
         List<Question> testQuestions = allQuestions.stream().limit(limit).toList();
-
         this.setVisible(false);
         new QuizGUI(this, subjectName, settings, testQuestions).setVisible(true);
     }
@@ -239,22 +280,18 @@ public class MainGUI extends JFrame {
     private void refreshList() {
         listModel.clear();
         for (Map.Entry<String, SubjectSettings> entry : config.getSubjects().entrySet()) {
-            listModel.addElement(entry.getKey() + " - " + entry.getValue().getQuizType());
+            listModel.addElement(entry.getKey() + " - " + entry.getValue().getQuizType() + " (" + entry.getValue().getDifficulty() + ")");
         }
     }
 
     private void loadConfig() {
-        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(CONFIG_FILE))) {
-            config = (AppConfig) in.readObject();
-        } catch (Exception e) {
-            config = new AppConfig();
-        }
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(CONFIG_FILE))) { config = (AppConfig) in.readObject(); }
+        catch (Exception e) { config = new AppConfig(); }
     }
 
     private void saveConfig() {
-        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(CONFIG_FILE))) {
-            out.writeObject(config);
-        } catch (IOException e) { e.printStackTrace(); }
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(CONFIG_FILE))) { out.writeObject(config); }
+        catch (IOException e) { e.printStackTrace(); }
     }
 
     public static void main(String[] args) {
