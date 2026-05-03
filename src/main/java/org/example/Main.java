@@ -73,11 +73,26 @@ public class Main {
         System.out.println("A) Multiple Choice (with ABCD options)");
         System.out.println("B) Open Book (free text typing)");
         System.out.print("Choice: ");
-        String typeChoice = scanner.nextLine().trim().toUpperCase();
 
+        String typeChoice = scanner.nextLine().trim().toUpperCase();
         String quizType = typeChoice.equals("B") ? "OPEN_BOOK" : "MULTIPLE_CHOICE";
 
-        config.addSubject(name, new SubjectSettings(filePath, quizType));
+
+        System.out.println("Select difficulty:");
+        System.out.println("1) EASY");
+        System.out.println("2) INTERMEDIATE");
+        System.out.println("3) HARD");
+        System.out.print("Choice: ");
+
+        String diffChoice = scanner.nextLine().trim();
+        Difficulty difficulty = switch (diffChoice) {
+            case "2" -> Difficulty.INTERMEDIATE;
+            case "3" -> Difficulty.HARD;
+            default -> Difficulty.EASY;
+        };
+
+
+        config.addSubject(name, new SubjectSettings(filePath, quizType, difficulty));
         System.out.println("Subject " + name + " was successfully added to the configuration.");
     }
 
@@ -87,10 +102,13 @@ public class Main {
             System.out.println("You have no subjects configured yet.");
             return;
         }
-        System.out.println("\n--- AVAILABLE SUBJECTS ---");
 
+        System.out.println("\n--- AVAILABLE SUBJECTS ---");
         for (Map.Entry<String, SubjectSettings> entry : subjects.entrySet()) {
-            System.out.println("- " + entry.getKey() + " (File: " + entry.getValue().getFilePath() + ", Type: " + entry.getValue().getQuizType() + ")");
+            SubjectSettings s = entry.getValue();
+
+            System.out.println("- " + entry.getKey() + " (File: " + s.getFilePath()
+                    + ", Type: " + s.getQuizType() + ", Difficulty: " + s.getDifficulty() + ")");
         }
     }
 
@@ -115,11 +133,11 @@ public class Main {
         System.out.println("Loading questions from file " + settings.getFilePath() + "...");
         List<Question> allQuestions;
 
-
+        Difficulty selectedDifficulty = settings.getDifficulty();
         if ("OPEN_BOOK".equals(settings.getQuizType())) {
-            allQuestions = OpenBookQuestionParser.loadQuestion(settings.getFilePath(), subjectName);
+            allQuestions = OpenBookQuestionParser.loadQuestion(settings.getFilePath(), subjectName, selectedDifficulty);
         } else {
-            allQuestions = QuestionParser.loadQuestions(settings.getFilePath(), subjectName, Difficulty.EASY);
+            allQuestions = QuestionParser.loadQuestions(settings.getFilePath(), subjectName, selectedDifficulty);
         }
 
         if (allQuestions.isEmpty()) {
