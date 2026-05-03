@@ -21,14 +21,14 @@ public class MainGUI extends JFrame {
     private static final String CONFIG_FILE = "config.dat";
     private AppConfig config;
 
-    // ZMĚNA: Používáme náš vlastní objekt SubjectItem místo obyčejného Stringu
+
     private DefaultListModel<SubjectItem> listModel;
     private JList<SubjectItem> subjectList;
 
     private final Color IS_BLUE = new Color(0, 92, 165);
     private final Color IS_LIGHT_BG = new Color(245, 246, 248);
 
-    // POMOCNÁ TŘÍDA: Zabrání rozbití názvů
+
     private static class SubjectItem {
         String name;
         SubjectSettings settings;
@@ -38,7 +38,7 @@ public class MainGUI extends JFrame {
             this.settings = settings;
         }
 
-        // To, co vrací toString(), se automaticky vykreslí v seznamu JList
+
         @Override
         public String toString() {
             return name + " - " + settings.getQuizType() + " (" + settings.getDifficulty() + ")";
