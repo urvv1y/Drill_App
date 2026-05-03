@@ -3,6 +3,10 @@ package data;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Strategy for penalizing, based on stupidity.
+ * @author urvy.
+ */
 public class PenaltyScoringStrategy implements ScoringStrategy {
     private Map<Integer, HowStupidAnswerPenalize> penalizeMap;
 

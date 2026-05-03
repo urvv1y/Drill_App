@@ -2,6 +2,9 @@ package data;
 
 import java.util.List;
 
+/**
+ * Class representing a basic question.
+ */
 public abstract class Question {
     protected String subject;
     protected Difficulty difficulty;

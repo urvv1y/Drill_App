@@ -2,6 +2,10 @@ package data;
 
 import java.util.Set;
 
+/**
+ * Class for open style questions.
+ * @author urvy.
+ */
 public class OpenBookAnswes extends Question {
     private String correctAnswer;
 

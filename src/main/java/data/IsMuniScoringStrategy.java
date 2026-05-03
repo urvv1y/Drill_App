@@ -2,6 +2,10 @@ package data;
 
 import java.util.Set;
 
+/**
+ * Scoring strategy, when there might be several correct answers and several bad answers with negative or partial points.
+ * @author urvy
+ */
 public class IsMuniScoringStrategy implements ScoringStrategy {
 
     @Override

@@ -7,6 +7,10 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * Parser for multiplechoice style questions.
+ * @author urvy.
+ */
 public class QuestionParser {
 
     public static List<Question> loadQuestions(String filePath, String subject, Difficulty difficulty) {
@@ -71,7 +75,6 @@ public class QuestionParser {
                 }
             }
 
-
             if (!questionText.isEmpty()) {
                 saveQuestion(questions, subject, questionText, options, correctAnswers, penalties, isFormatWithPenalty, difficulty);
             }
@@ -83,11 +86,9 @@ public class QuestionParser {
         return questions;
     }
 
-
     private static void saveQuestion(List<Question> questions, String subject, String questionText,
                                      List<String> options, Set<Integer> correctAnswers,
                                      Map<Integer, HowStupidAnswerPenalize> penalties, boolean isFormatWithPenalty, Difficulty difficulty) {
-
         ScoringStrategy strategy;
 
         if (isFormatWithPenalty) {

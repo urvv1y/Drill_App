@@ -3,6 +3,12 @@ package data;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Questions with multiplechoice.
+ * May be used for penalization.
+ * @author urvy.
+ *
+ */
 public class MultipleChoiceQuestionWithOrWithoutPenalization extends Question {
     private List<String> options;
     private Set<Integer> correctOptionIndexes;
@@ -22,7 +28,7 @@ public class MultipleChoiceQuestionWithOrWithoutPenalization extends Question {
         this.scoringStrategy = scoringStrategy;
     }
 
-    public int evaluateAnswer(Set<Integer> userAnswers) {
+    public double evaluateAnswer(Set<Integer> userAnswers) {
         return scoringStrategy.evaluate(userAnswers, correctOptionIndexes);
     }
 

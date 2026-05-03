@@ -11,6 +11,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Parser for the open style questions.
+ * @author urvy.
+ */
 public class OpenBookQuestionParser {
 
     public static List<Question> loadQuestion(String filePath, String subject, Difficulty difficulty) {
