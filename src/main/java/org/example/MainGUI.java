@@ -20,17 +20,34 @@ import java.util.Map;
 public class MainGUI extends JFrame {
     private static final String CONFIG_FILE = "config.dat";
     private AppConfig config;
-    private DefaultListModel<String> listModel;
-    private JList<String> subjectList;
 
-    // Barvy ve stylu IS MUNI
+    // ZMĚNA: Používáme náš vlastní objekt SubjectItem místo obyčejného Stringu
+    private DefaultListModel<SubjectItem> listModel;
+    private JList<SubjectItem> subjectList;
+
     private final Color IS_BLUE = new Color(0, 92, 165);
     private final Color IS_LIGHT_BG = new Color(245, 246, 248);
+
+    // POMOCNÁ TŘÍDA: Zabrání rozbití názvů
+    private static class SubjectItem {
+        String name;
+        SubjectSettings settings;
+
+        public SubjectItem(String name, SubjectSettings settings) {
+            this.name = name;
+            this.settings = settings;
+        }
+
+        // To, co vrací toString(), se automaticky vykreslí v seznamu JList
+        @Override
+        public String toString() {
+            return name + " - " + settings.getQuizType() + " (" + settings.getDifficulty() + ")";
+        }
+    }
 
     public MainGUI() {
         loadConfig();
 
-        // Nastavení moderního vzhledu oken
         try { UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName()); } catch (Exception ignored) {}
 
         setTitle("IS MUNI - Odpovědníky");
@@ -51,7 +68,6 @@ public class MainGUI extends JFrame {
     }
 
     private void initUI() {
-        // Hlavička
         JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         headerPanel.setBackground(IS_BLUE);
         headerPanel.setBorder(new EmptyBorder(15, 20, 15, 20));
@@ -61,7 +77,6 @@ public class MainGUI extends JFrame {
         headerPanel.add(titleLabel);
         add(headerPanel, BorderLayout.NORTH);
 
-        // Seznam předmětů
         listModel = new DefaultListModel<>();
         refreshList();
         subjectList = new JList<>(listModel);
@@ -79,7 +94,6 @@ public class MainGUI extends JFrame {
         centerPanel.add(scrollPane, BorderLayout.CENTER);
         add(centerPanel, BorderLayout.CENTER);
 
-        // Spodní panel s tlačítky
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 15));
         buttonPanel.setBackground(IS_LIGHT_BG);
         buttonPanel.setBorder(new EmptyBorder(0, 20, 20, 20));
@@ -90,23 +104,25 @@ public class MainGUI extends JFrame {
         JButton btnStart = createStyledButton("Složit test", true);
 
         btnAdd.addActionListener(e -> showSubjectDialog(null));
+
+        // ZMĚNA: Nyní pracujeme přímo s chytrými objekty SubjectItem
         btnEdit.addActionListener(e -> {
-            String selected = subjectList.getSelectedValue();
-            if (selected != null) showSubjectDialog(selected.split(" - ")[0]);
+            SubjectItem selected = subjectList.getSelectedValue();
+            if (selected != null) showSubjectDialog(selected.name);
             else JOptionPane.showMessageDialog(this, "Vyberte předmět k úpravě.", "Info", JOptionPane.INFORMATION_MESSAGE);
         });
 
         btnDelete.addActionListener(e -> {
-            String selected = subjectList.getSelectedValue();
+            SubjectItem selected = subjectList.getSelectedValue();
             if (selected != null) {
-                config.getSubjects().remove(selected.split(" - ")[0]);
+                config.getSubjects().remove(selected.name);
                 refreshList();
             }
         });
 
         btnStart.addActionListener(e -> {
-            String selected = subjectList.getSelectedValue();
-            if (selected != null) startQuizMode(selected.split(" - ")[0]);
+            SubjectItem selected = subjectList.getSelectedValue();
+            if (selected != null) startQuizMode(selected.name);
             else JOptionPane.showMessageDialog(this, "Nejprve vyberte test ze seznamu.", "Info", JOptionPane.INFORMATION_MESSAGE);
         });
 
@@ -280,7 +296,7 @@ public class MainGUI extends JFrame {
     private void refreshList() {
         listModel.clear();
         for (Map.Entry<String, SubjectSettings> entry : config.getSubjects().entrySet()) {
-            listModel.addElement(entry.getKey() + " - " + entry.getValue().getQuizType() + " (" + entry.getValue().getDifficulty() + ")");
+            listModel.addElement(new SubjectItem(entry.getKey(), entry.getValue()));
         }
     }
 
@@ -295,6 +311,7 @@ public class MainGUI extends JFrame {
     }
 
     public static void main(String[] args) {
+        try { UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName()); } catch (Exception ignored) {}
         SwingUtilities.invokeLater(() -> new MainGUI().setVisible(true));
     }
 }

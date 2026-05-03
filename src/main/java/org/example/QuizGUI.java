@@ -71,7 +71,6 @@ public class QuizGUI extends JFrame {
         topPanel.add(lblProgress, BorderLayout.CENTER);
         add(topPanel, BorderLayout.NORTH);
 
-        // Hlavní kontejner obsahu s minimálním levým okrajem
         JPanel contentPanel = new JPanel();
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
         contentPanel.setBackground(Color.WHITE);
@@ -136,7 +135,7 @@ public class QuizGUI extends JFrame {
                 JPanel warnWrap = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
                 warnWrap.setBackground(Color.WHITE);
                 warnWrap.setAlignmentX(Component.LEFT_ALIGNMENT);
-                JLabel lblWarning = new JLabel("<html><div style='background-color: #fff3cd; color: #856404; padding: 5px 10px; border: 1px solid #ffeeba; font-size: 12px;'><b>Upozornění:</b> Penaltové bodování.</div></html>");
+                JLabel lblWarning = new JLabel("<html><div style='background-color: #fff3cd; color: #856404; padding: 5px 10px; border: 1px solid #ffeeba; font-size: 12px; border-radius: 3px;'><b>Upozornění:</b> Penaltové bodování.</div></html>");
                 warnWrap.add(lblWarning);
                 optionsPanel.add(warnWrap);
                 optionsPanel.add(Box.createVerticalStrut(15));
@@ -151,7 +150,6 @@ public class QuizGUI extends JFrame {
             Collections.shuffle(shuffledOptions);
 
             for (OptionDisplay od : shuffledOptions) {
-                // Wrapper pro každou odpověď, aby se FlowLayout natlačil doleva
                 JPanel row = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
                 row.setBackground(Color.WHITE);
                 row.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -254,6 +252,7 @@ public class QuizGUI extends JFrame {
         StringBuilder html = new StringBuilder();
         html.append("<html><head><style>")
                 .append("body { font-family: 'Segoe UI', sans-serif; font-size: 12px; padding: 10px; margin: 0; }")
+                .append(".scale-box { background-color: #f8f9fa; padding: 10px; margin-bottom: 20px; border-radius: 4px; border: 1px solid #dee2e6; text-align: center; color: #495057; font-size: 13px; }")
                 .append(".q-block { padding: 10px; margin-bottom: 15px; border-radius: 4px; border: 1px solid #ddd; }")
                 .append(".q-perfect { border-left: 5px solid #28a745; background-color: #f9fff9; }")
                 .append(".q-wrong { border-left: 5px solid #dc3545; background-color: #fff9f9; }")
@@ -264,6 +263,17 @@ public class QuizGUI extends JFrame {
                 .append(".wrong-text { color: #bd2130; text-decoration: line-through; }")
                 .append(".missed-text { color: #856404; font-style: italic; }")
                 .append("</style></head><body>");
+
+        // PŘIDÁNA LEGENDA SE STUPNICÍ
+        html.append("<div class='scale-box'>")
+                .append("<b>Hodnoticí stupnice:</b> &nbsp;&nbsp;")
+                .append("<span style='color:#28a745'><b>A:</b> 90–100%</span> &nbsp;|&nbsp; ")
+                .append("<span style='color:#28a745'><b>B:</b> 80–89%</span> &nbsp;|&nbsp; ")
+                .append("<span style='color:#17a2b8'><b>C:</b> 70–79%</span> &nbsp;|&nbsp; ")
+                .append("<span style='color:#ffc107'><b>D:</b> 60–69%</span> &nbsp;|&nbsp; ")
+                .append("<span style='color:#fd7e14'><b>E:</b> 50–59%</span> &nbsp;|&nbsp; ")
+                .append("<span style='color:#dc3545'><b>F:</b> &lt; 50%</span>")
+                .append("</div>");
 
         for (int i = 0; i < histories.size(); i++) {
             History h = histories.get(i);
