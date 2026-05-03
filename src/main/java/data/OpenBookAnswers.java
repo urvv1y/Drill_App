@@ -1,18 +1,16 @@
 package data;
 
-import java.util.Set;
-
 /**
  * Class for open style questions.
  * @author urvy.
  */
-public class OpenBookAnswes extends Question {
+public class OpenBookAnswers extends Question {
     private String correctAnswer;
 
-    public OpenBookAnswes(String subject,
-                          Difficulty difficulty,
-                          String text,
-                          String correctAnswer
+    public OpenBookAnswers(String subject,
+                           Difficulty difficulty,
+                           String text,
+                           String correctAnswer
                           ) {
         super(subject, difficulty, text);
         this.correctAnswer = correctAnswer;

@@ -1,7 +1,7 @@
 package input_output;
 
 import data.Difficulty;
-import data.OpenBookAnswes;
+import data.OpenBookAnswers;
 import data.Question;
 
 import java.io.BufferedReader;
@@ -58,7 +58,7 @@ public class OpenBookQuestionParser {
     }
 
     public static void saveQuestion(List<Question> questions, String subject, String questionText, String answerText, Difficulty difficulty) {
-        Question q = new OpenBookAnswes(subject, difficulty, questionText, answerText);
+        Question q = new OpenBookAnswers(subject, difficulty, questionText, answerText);
         questions.add(q);
     }
 }

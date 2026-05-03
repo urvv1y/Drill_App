@@ -1,35 +1,136 @@
 package org.example;
 
-import data.Difficulty;
-import data.Question;
-import data.MultipleChoiceQuestionWithOrWithoutPenalization;
+import data.*;
+import input_output.OpenBookQuestionParser;
 import input_output.QuestionParser;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Scanner;
-import java.util.Set;
-import java.util.HashSet;
+import java.io.*;
+import java.util.*;
 
 public class Main {
+    private static final String CONFIG_FILE = "config.dat";
+    private static AppConfig config;
+    private static Scanner scanner = new Scanner(System.in);
+
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
+        System.out.println("========================================");
+        System.out.println("       STARTING TESTING SYSTEM          ");
+        System.out.println("========================================");
 
-        System.out.println("Loading...");
+
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(CONFIG_FILE))) {
+
+            config = (AppConfig) in.readObject();
+            System.out.println("Settings successfully loaded. Subjects count: " + config.getSubjects().size());
+        } catch (FileNotFoundException e) {
+            System.out.println("Welcome for the first time! Creating new clean settings...");
+            config = new AppConfig();
+        } catch (IOException | ClassNotFoundException e) {
+            System.err.println("Error loading configuration: " + e.getMessage());
+            config = new AppConfig();
+        }
+
+        boolean running = true;
+        while (running) {
+            System.out.println("\n=== MAIN MENU ===");
+            System.out.println("1. Start quiz");
+            System.out.println("2. Add new subject (file path and type settings)");
+            System.out.println("3. Show available subjects");
+            System.out.println("4. Save and exit");
+            System.out.print("Your choice: ");
+
+            String choice = scanner.nextLine().trim();
+
+            switch (choice) {
+                case "1" -> startQuiz();
+                case "2" -> addSubject();
+                case "3" -> showSubjects();
+                case "4" -> running = false;
+                default -> System.out.println("Invalid choice, please try again.");
+            }
+        }
+
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(CONFIG_FILE))) {
+
+            out.writeObject(config);
+            System.out.println("Settings successfully saved. Goodbye!");
+        } catch (IOException e) {
+            System.err.println("Failed to save settings: " + e.getMessage());
+        }
+
+        scanner.close();
+    }
 
 
-        List<Question> allQuestions = QuestionParser.loadQuestions("C:\\Users\\Lukáš\\Desktop\\MUNI\\PB152\\exam_script\\otazky.txt", "Subject", Difficulty.EASY);
+    private static void addSubject() {
+        System.out.print("Enter subject name (e.g., PB112): ");
+        String name = scanner.nextLine().trim();
+
+        System.out.print("Enter path to the text file with questions (e.g., pb112.txt): ");
+        String filePath = scanner.nextLine().trim();
+
+        System.out.println("Select question type:");
+        System.out.println("A) Multiple Choice (with ABCD options)");
+        System.out.println("B) Open Book (free text typing)");
+        System.out.print("Choice: ");
+        String typeChoice = scanner.nextLine().trim().toUpperCase();
+
+        String quizType = typeChoice.equals("B") ? "OPEN_BOOK" : "MULTIPLE_CHOICE";
+
+        config.addSubject(name, new SubjectSettings(filePath, quizType));
+        System.out.println("Subject " + name + " was successfully added to the configuration.");
+    }
+
+    private static void showSubjects() {
+        Map<String, SubjectSettings> subjects = config.getSubjects();
+        if (subjects.isEmpty()) {
+            System.out.println("You have no subjects configured yet.");
+            return;
+        }
+        System.out.println("\n--- AVAILABLE SUBJECTS ---");
+
+        for (Map.Entry<String, SubjectSettings> entry : subjects.entrySet()) {
+            System.out.println("- " + entry.getKey() + " (File: " + entry.getValue().getFilePath() + ", Type: " + entry.getValue().getQuizType() + ")");
+        }
+    }
+
+
+
+    private static void startQuiz() {
+        if (config.getSubjects().isEmpty()) {
+            System.out.println("You must add a subject first (option 2 in the menu).");
+            return;
+        }
+
+        showSubjects();
+        System.out.print("\nType the name of the subject you want to start: ");
+        String subjectName = scanner.nextLine().trim();
+
+        SubjectSettings settings = config.getSubjects().get(subjectName);
+        if (settings == null) {
+            System.out.println("Subject with this name was not found.");
+            return;
+        }
+
+        System.out.println("Loading questions from file " + settings.getFilePath() + "...");
+        List<Question> allQuestions;
+
+
+        if ("OPEN_BOOK".equals(settings.getQuizType())) {
+            allQuestions = OpenBookQuestionParser.loadQuestion(settings.getFilePath(), subjectName);
+        } else {
+            allQuestions = QuestionParser.loadQuestions(settings.getFilePath(), subjectName, Difficulty.EASY);
+        }
 
         if (allQuestions.isEmpty()) {
-            System.out.println("Questions cannot be loaded.");
+            System.out.println("No questions could be loaded.");
             return;
         }
 
 
         Collections.shuffle(allQuestions);
 
-        System.out.print("How many questions? (MAX is " + allQuestions.size() + "): ");
+        System.out.print("How many questions do you want? (MAX is " + allQuestions.size() + "): ");
         int limit = allQuestions.size();
         try {
             String input = scanner.nextLine().trim();
@@ -48,7 +149,7 @@ public class Main {
         double totalScore = 0.0;
 
 
-        record History(Question question, Set<Integer> userAnswers, double points) {}
+        record History(Question question, Object userAnswer, double points) {}
         List<History> histories = new ArrayList<>();
 
 
@@ -57,6 +158,7 @@ public class Main {
             System.out.println("\nQuestion " + (i + 1) + "/" + testQuestions.size());
             System.out.println(q.getText());
             System.out.println("----------------------------------------");
+
 
             if (q instanceof MultipleChoiceQuestionWithOrWithoutPenalization mcq) {
 
@@ -69,8 +171,7 @@ public class Main {
                 for (int j = 0; j < originalOptions.size(); j++) {
                     shuffledOptions.add(new OptionDisplay(j, originalOptions.get(j)));
                 }
-                Collections.shuffle(shuffledOptions);
-
+                Collections.shuffle(shuffledOptions); // Shuffle only for display[cite: 7]
 
                 for (int j = 0; j < shuffledOptions.size(); j++) {
                     char letter = (char) ('A' + j);
@@ -80,7 +181,7 @@ public class Main {
                 System.out.print("Your answer (e.g., AC): ");
                 String input = scanner.nextLine().trim().toUpperCase();
 
-
+                // Convert letters back to original indexes
                 Set<Integer> userAnswers = new HashSet<>();
                 for (char c : input.toCharArray()) {
                     int displayIndex = c - 'A';
@@ -93,22 +194,29 @@ public class Main {
                 double points = mcq.evaluateAnswer(userAnswers);
                 totalScore += points;
                 System.out.println("Result: " + points + " points.");
-
                 histories.add(new History(q, userAnswers, points));
+
+            } else if (q instanceof OpenBookAnswers obq) {
+                // Evaluation for open-book questions
+                System.out.print("Your answer: ");
+                String input = scanner.nextLine().trim();
+
+                boolean isCorrect = obq.isCorrect(input);
+                double points = isCorrect ? 1.0 : 0.0;
+                totalScore += points;
+
+                System.out.println(isCorrect ? "Correct! You earned 1.0 points." : "Wrong. You earned 0.0 points.");
+                histories.add(new History(q, input, points));
             }
         }
 
-
-        // PB152 (+4 body): testQuestions.size() * 4
         double maxPoints = testQuestions.size();
-
         System.out.println("\n========================================");
         System.out.println("FINAL SCORE: " + totalScore + " / " + maxPoints);
 
         if (maxPoints > 0) {
             double percentage = (totalScore / maxPoints) * 100;
             System.out.printf("SUCCESS RATE: %.1f %%\n", percentage);
-
 
             if (percentage >= 90) System.out.println("GRADE: A");
             else if (percentage >= 80) System.out.println("GRADE: B");
@@ -119,10 +227,11 @@ public class Main {
         }
 
         System.out.println("\n========================================");
-        System.out.println("                MISTAKES                ");
+        System.out.println("              MISTAKES                  ");
         System.out.println("========================================");
 
         boolean perfect = true;
+
 
         for (int i = 0; i < histories.size(); i++) {
             History h = histories.get(i);
@@ -135,23 +244,25 @@ public class Main {
 
                 if (h.question() instanceof MultipleChoiceQuestionWithOrWithoutPenalization mcq) {
                     List<String> options = mcq.getOptions();
-                    System.out.println("You selected:");
+                    Set<Integer> uAnsSet = (Set<Integer>) h.userAnswer();
 
-                    if (h.userAnswers().isEmpty()) {
+                    System.out.println("You selected:");
+                    if (uAnsSet.isEmpty()) {
                         System.out.println(" - (skipped)");
                     } else {
-                        for (Integer ansIndex : h.userAnswers()) {
+                        for (Integer ansIndex : uAnsSet) {
                             System.out.println(" - " + options.get(ansIndex));
                         }
                     }
+                } else if (h.question() instanceof OpenBookAnswers) {
+                    System.out.println("You wrote: " + h.userAnswer());
                 }
             }
         }
-        if (perfect) {
-            System.out.println("No mistakes made.");
-        }
-        System.out.println("========================================");
 
-        scanner.close();
+        if (perfect) {
+            System.out.println("Perfect score! No mistakes made.");
+        }
+        System.out.println("========================================\n");
     }
 }

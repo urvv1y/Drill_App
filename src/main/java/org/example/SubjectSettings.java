@@ -11,7 +11,7 @@ public class SubjectSettings implements Serializable {
         this.quizType = quizType;
     }
 
-    public String getFilepath() {
+    public String getFilePath() {
         return filepath;
     }
 
@@ -26,6 +26,7 @@ public class SubjectSettings implements Serializable {
     public void setQuizType(String quizType) {
         this.quizType = quizType;
     }
+
 
 
 }
