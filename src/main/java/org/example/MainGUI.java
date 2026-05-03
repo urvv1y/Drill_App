@@ -105,7 +105,7 @@ public class MainGUI extends JFrame {
 
         btnAdd.addActionListener(e -> showSubjectDialog(null));
 
-        // ZMĚNA: Nyní pracujeme přímo s chytrými objekty SubjectItem
+
         btnEdit.addActionListener(e -> {
             SubjectItem selected = subjectList.getSelectedValue();
             if (selected != null) showSubjectDialog(selected.name);

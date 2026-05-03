@@ -264,7 +264,7 @@ public class QuizGUI extends JFrame {
                 .append(".missed-text { color: #856404; font-style: italic; }")
                 .append("</style></head><body>");
 
-      
+
         html.append("<div class='scale-box'>")
                 .append("<b>Hodnoticí stupnice:</b> &nbsp;&nbsp;")
                 .append("<span style='color:#28a745'><b>A:</b> 90–100%</span> &nbsp;|&nbsp; ")
