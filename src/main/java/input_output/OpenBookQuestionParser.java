@@ -17,7 +17,7 @@ import java.util.List;
  */
 public class OpenBookQuestionParser {
 
-    public static List<Question> loadQuestion(String filePath, String subject, Difficulty difficulty) {
+    public static List<Question> loadQuestions(String filePath, String subject, Difficulty difficulty) {
         List<Question> questions = new ArrayList<>();
 
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
