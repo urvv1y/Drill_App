@@ -27,5 +27,5 @@ public class SubjectSettings implements Serializable {
         this.quizType = quizType;
     }
 
-    
+
 }
