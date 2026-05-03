@@ -24,4 +24,7 @@ public class OpenBookAnswers extends Question {
         return false;
     }
 
+    public String getCorrectAnswer() {
+        return correctAnswer;
+    }
 }

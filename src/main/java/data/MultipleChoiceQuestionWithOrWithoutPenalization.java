@@ -44,4 +44,8 @@ public class MultipleChoiceQuestionWithOrWithoutPenalization extends Question {
         }
         return false;
     }
+
+    public Set<Integer> getCorrectOptionIndexes() {
+        return correctOptionIndexes;
+    }
 }
