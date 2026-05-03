@@ -15,10 +15,20 @@ public class SubjectSettings implements Serializable {
     private int ptsOneOk = 1;
     private int ptsOneWrong = -1;
 
+    private int penaltyOk = 1;
+    private int penaltyStupid = -1;
+    private int penaltyVeryStupid = -2;
+
     public SubjectSettings(String filepath, String quizType, Difficulty difficulty) {
         this.filepath = filepath;
         this.quizType = quizType;
         this.difficulty = difficulty;
+    }
+
+    public void setPenaltyScoring(int pOk, int pStupid, int pVeryStupid) {
+        this.penaltyOk = pOk;
+        this.penaltyStupid = pStupid;
+        this.penaltyVeryStupid = pVeryStupid;
     }
 
     public void setCustomScoring(int p2, int p1in2, int p0in2, int p1, int p1w) {
@@ -58,4 +68,7 @@ public class SubjectSettings implements Serializable {
     public int getPtsZeroOkInTwo() { return ptsZeroOkInTwo; }
     public int getPtsOneOk() { return ptsOneOk; }
     public int getPtsOneWrong() { return ptsOneWrong; }
+    public int getPenaltyOk() { return penaltyOk; }
+    public int getPenaltyStupid() { return penaltyStupid; }
+    public int getPenaltyVeryStupid() { return penaltyVeryStupid; }
 }

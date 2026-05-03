@@ -48,4 +48,8 @@ public class MultipleChoiceQuestionWithOrWithoutPenalization extends Question {
     public Set<Integer> getCorrectOptionIndexes() {
         return correctOptionIndexes;
     }
+
+    public ScoringStrategy getScoringStrategy() {
+        return scoringStrategy;
+    }
 }

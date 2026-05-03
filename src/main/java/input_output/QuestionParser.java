@@ -8,7 +8,7 @@ import java.util.*;
 
 public class QuestionParser {
 
-    public static List<Question> loadQuestions(String filePath, String subject, Difficulty difficulty, CustomScoringStrategy defaultStrategy) {
+    public static List<Question> loadQuestions(String filePath, String subject, Difficulty difficulty, CustomScoringStrategy defaultStrategy, int pOk, int pStupid, int pVeryStupid) {
         List<Question> questions = new ArrayList<>();
 
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
@@ -24,7 +24,7 @@ public class QuestionParser {
 
                 if (line.isEmpty() || line.equals("---")) {
                     if (!questionText.isEmpty()) {
-                        saveQuestion(questions, subject, questionText, options, correctAnswers, penalties, isFormatWithPenalty, difficulty, defaultStrategy);
+                        saveQuestion(questions, subject, questionText, options, correctAnswers, penalties, isFormatWithPenalty, difficulty, defaultStrategy, pOk, pStupid, pVeryStupid);
                         questionText = "";
                     }
                     continue;
@@ -32,7 +32,7 @@ public class QuestionParser {
 
                 if (line.startsWith("Q:")) {
                     if (!questionText.isEmpty()) {
-                        saveQuestion(questions, subject, questionText, options, correctAnswers, penalties, isFormatWithPenalty, difficulty, defaultStrategy);
+                        saveQuestion(questions, subject, questionText, options, correctAnswers, penalties, isFormatWithPenalty, difficulty, defaultStrategy, pOk, pStupid, pVeryStupid);
                     }
                     questionText = line.substring(line.indexOf(':') + 1).trim();
                     options.clear();
@@ -66,7 +66,7 @@ public class QuestionParser {
             }
 
             if (!questionText.isEmpty()) {
-                saveQuestion(questions, subject, questionText, options, correctAnswers, penalties, isFormatWithPenalty, difficulty, defaultStrategy);
+                saveQuestion(questions, subject, questionText, options, correctAnswers, penalties, isFormatWithPenalty, difficulty, defaultStrategy, pOk, pStupid, pVeryStupid);;
             }
 
         } catch (IOException e) {
@@ -79,13 +79,13 @@ public class QuestionParser {
     private static void saveQuestion(List<Question> questions, String subject, String questionText,
                                      List<String> options, Set<Integer> correctAnswers,
                                      Map<Integer, HowStupidAnswerPenalize> penalties, boolean isFormatWithPenalty,
-                                     Difficulty difficulty, CustomScoringStrategy defaultStrategy) {
+                                     Difficulty difficulty, CustomScoringStrategy defaultStrategy, int pOk, int pStupid, int pVeryStupid) {
 
         if (options.isEmpty()) return;
 
         ScoringStrategy strategy;
         if (isFormatWithPenalty) {
-            strategy = new PenaltyScoringStrategy(new HashMap<>(penalties));
+            strategy = new PenaltyScoringStrategy(new HashMap<>(penalties), pOk, pStupid, pVeryStupid);
         } else {
             strategy = defaultStrategy;
         }
