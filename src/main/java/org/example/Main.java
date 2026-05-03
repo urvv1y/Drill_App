@@ -228,11 +228,19 @@ public class Main {
             }
         }
 
-        double maxPoints = testQuestions.size();
+        double maxPoints = 0.0;
+        for (Question question : testQuestions) {
+            if (question instanceof MultipleChoiceQuestionWithOrWithoutPenalization) {
+                maxPoints += 4.0;
+            } else if (question instanceof OpenBookAnswers) {
+                maxPoints += 1.0;
+            }
+        }
         System.out.println("\n========================================");
         System.out.println("FINAL SCORE: " + totalScore + " / " + maxPoints);
 
         if (maxPoints > 0) {
+            double displayScore = Math.max(totalScore, 0);
             double percentage = (totalScore / maxPoints) * 100;
             System.out.printf("SUCCESS RATE: %.1f %%\n", percentage);
 
